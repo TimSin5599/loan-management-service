@@ -1,0 +1,36 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: loan-management-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/loan_management}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
+
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+jwt:
+  secret: ${JWT_SECRET:REPLACE_WITH_A_LONG_RANDOM_BASE64_SECRET_AT_LEAST_32_BYTES}
+
+internal-api:
+  key: ${INTERNAL_API_KEY:REPLACE_WITH_AN_INTERNAL_SERVICE_SECRET}

@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+jwt:
+  secret: test-secret-key-must-be-at-least-256-bits-long-for-hs256-signing
+
+internal-api:
+  key: test-internal-api-key

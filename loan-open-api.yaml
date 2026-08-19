@@ -1,0 +1,221 @@
+openapi: 3.0.0
+info:
+  title: API управления кредитами и платежами
+  version: 1.1.0
+  description: API для работы с кредитами и платежами пользователей
+
+paths:
+  /loan-management-service/api/v1/payment/loans:
+    get:
+      tags:
+        - Кредиты
+      summary: Получение списка кредитов пользователя
+      description: Возвращает список активных кредитов пользователя с основной информацией
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Успешное получение списка кредитов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoansResponse'
+        '400':
+          description: Некорректный запрос
+        '401':
+          description: Не авторизован
+
+  /loan-management-service/api/v1/payment:
+    post:
+      tags:
+        - Платежи
+      summary: Создание платежа по кредиту
+      description: Создает новый платеж по указанному кредиту
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+            examples:
+              paymentExample:
+                value:
+                  loanId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                  amount: 50000.00
+                  paymentType: "PARTIAL"
+      responses:
+        '200':
+          description: Платеж успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: Некорректные данные платежа
+        '401':
+          description: Не авторизован
+        '404':
+          description: Кредит не найден
+
+  /loan-management-service/api/payment/history:
+    get:
+      tags:
+        - Платежи
+      summary: Получение истории платежей
+      description: Возвращает историю платежей по конкретному кредиту
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: loanId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID кредита для получения истории платежей
+      responses:
+        '200':
+          description: Успешное получение истории платежей
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentHistoryResponse'
+        '400':
+          description: Некорректный ID кредита
+        '401':
+          description: Не авторизован
+        '404':
+          description: Кредит не найден
+
+components:
+  schemas:
+    UserLoansResponse:
+      type: object
+      properties:
+        loans:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoanInfo'
+      required:
+        - loans
+
+    LoanInfo:
+      type: object
+      properties:
+        loanId:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        totalAmount:
+          type: number
+          format: float
+          example: 150000.00
+        remainingAmount:
+          type: number
+          format: float
+          example: 120000.00
+        nextPaymentDate:
+          type: string
+          format: date
+          example: "2023-12-15"
+        status:
+          type: string
+          enum: ["ACTIVE", "CLOSED", "OVERDUE"]
+          example: "ACTIVE"
+      required:
+        - loanId
+        - totalAmount
+        - remainingAmount
+        - nextPaymentDate
+        - status
+
+    CreatePaymentRequest:
+      type: object
+      required:
+        - loanId
+        - amount
+        - paymentType
+      properties:
+        loanId:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 50000.00
+        paymentType:
+          type: string
+          enum: ["FULL", "PARTIAL", "EARLY"]
+          example: "PARTIAL"
+      additionalProperties: false
+
+    PaymentResponse:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa7"
+        newBalance:
+          type: number
+          format: float
+          example: 70000.00
+        nextPaymentDate:
+          type: string
+          format: date
+          example: "2024-01-15"
+      required:
+        - paymentId
+        - newBalance
+        - nextPaymentDate
+
+    PaymentHistoryResponse:
+      type: object
+      properties:
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentHistoryItem'
+      required:
+        - payments
+
+    PaymentHistoryItem:
+      type: object
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa7"
+        amount:
+          type: number
+          format: float
+          example: 50000.00
+        paymentDate:
+          type: string
+          format: date-time
+          example: "2023-11-15T14:30:00Z"
+        paymentType:
+          type: string
+          enum: ["FULL", "PARTIAL", "EARLY"]
+          example: "PARTIAL"
+        newBalance:
+          type: number
+          format: float
+          example: 70000.00
+      required:
+        - paymentId
+        - amount
+        - paymentDate
+        - paymentType
+        - newBalance
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT токен авторизации

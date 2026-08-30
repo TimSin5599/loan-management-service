@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentCreateUseCaseImplTest {
-
     @Mock
     private LoanProvider loanProvider;
 
@@ -50,7 +49,7 @@ class PaymentCreateUseCaseImplTest {
         UUID loanId = UUID.randomUUID();
         LocalDate initialNextPaymentDate = LocalDate.of(2024, 1, 15);
         LoanEntity loan = loan(loanId, userId, BigDecimal.valueOf(100000), initialNextPaymentDate);
-        when(loanProvider.findById(loanId)).thenReturn(Optional.of(loan));
+        when(loanProvider.findByIdForUpdate(loanId)).thenReturn(Optional.of(loan));
         when(loanProvider.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(paymentRepository.save(any())).thenAnswer(invocation -> {
             PaymentEntity entity = invocation.getArgument(0);
@@ -68,13 +67,16 @@ class PaymentCreateUseCaseImplTest {
         ArgumentCaptor<PaymentEntity> captor = ArgumentCaptor.forClass(PaymentEntity.class);
         verify(paymentRepository).save(captor.capture());
         assertThat(captor.getValue().getBalanceAfter()).isEqualByComparingTo(BigDecimal.valueOf(70000));
+
+        verify(loanProvider).findByIdForUpdate(loanId);
+        verify(loanProvider, org.mockito.Mockito.never()).findById(any());
     }
 
     @Test
     void createPayment_fullAmount_closesLoan() {
         UUID loanId = UUID.randomUUID();
         LoanEntity loan = loan(loanId, userId, BigDecimal.valueOf(50000), LocalDate.now().plusMonths(1));
-        when(loanProvider.findById(loanId)).thenReturn(Optional.of(loan));
+        when(loanProvider.findByIdForUpdate(loanId)).thenReturn(Optional.of(loan));
         when(loanProvider.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(paymentRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -89,7 +91,7 @@ class PaymentCreateUseCaseImplTest {
     void createPayment_amountExceedsRemaining_throwsAndDoesNotSave() {
         UUID loanId = UUID.randomUUID();
         LoanEntity loan = loan(loanId, userId, BigDecimal.valueOf(50000), LocalDate.now().plusMonths(1));
-        when(loanProvider.findById(loanId)).thenReturn(Optional.of(loan));
+        when(loanProvider.findByIdForUpdate(loanId)).thenReturn(Optional.of(loan));
 
         CreatePaymentRequest request = new CreatePaymentRequest(loanId, BigDecimal.valueOf(60000), PaymentType.PARTIAL);
 
@@ -102,7 +104,7 @@ class PaymentCreateUseCaseImplTest {
     @Test
     void createPayment_loanNotOwnedByUser_throwsNotFound() {
         UUID loanId = UUID.randomUUID();
-        when(loanProvider.findById(loanId)).thenReturn(Optional.empty());
+        when(loanProvider.findByIdForUpdate(loanId)).thenReturn(Optional.empty());
 
         CreatePaymentRequest request = new CreatePaymentRequest(loanId, BigDecimal.valueOf(1000), PaymentType.PARTIAL);
 
@@ -115,7 +117,7 @@ class PaymentCreateUseCaseImplTest {
         UUID loanId = UUID.randomUUID();
         LoanEntity loan = loan(loanId, userId, BigDecimal.ZERO, null);
         loan.setStatus(LoanStatus.CLOSED);
-        when(loanProvider.findById(loanId)).thenReturn(Optional.of(loan));
+        when(loanProvider.findByIdForUpdate(loanId)).thenReturn(Optional.of(loan));
 
         CreatePaymentRequest request = new CreatePaymentRequest(loanId, BigDecimal.valueOf(1000), PaymentType.PARTIAL);
 

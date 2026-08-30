@@ -11,7 +11,6 @@ import ru.creditbank.loan.management.loan.list.service.LoanListUseCase;
 
 @RestController
 public class LoanListController {
-
     private final LoanListUseCase loanListUseCase;
 
     public LoanListController(LoanListUseCase loanListUseCase) {

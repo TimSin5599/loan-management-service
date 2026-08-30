@@ -6,6 +6,5 @@ import ru.creditbank.loan.management.payment.history.rest.dto.PaymentHistoryResp
 import java.util.UUID;
 
 public interface PaymentHistoryUseCase {
-
     PaymentHistoryResponse getHistory(AuthenticatedUser user, UUID loanId);
 }

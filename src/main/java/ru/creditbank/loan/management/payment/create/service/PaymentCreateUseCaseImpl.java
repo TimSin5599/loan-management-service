@@ -1,5 +1,7 @@
 package ru.creditbank.loan.management.payment.create.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.creditbank.loan.management.config.AuthenticatedUser;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 
 @Service
 public class PaymentCreateUseCaseImpl implements PaymentCreateUseCase {
+    private static final Logger log = LoggerFactory.getLogger(PaymentCreateUseCaseImpl.class);
 
     private final LoanProvider loanProvider;
     private final PaymentRepository paymentRepository;
@@ -30,17 +33,25 @@ public class PaymentCreateUseCaseImpl implements PaymentCreateUseCase {
     @Override
     @Transactional
     public PaymentResponse createPayment(AuthenticatedUser user, CreatePaymentRequest request) {
-        LoanEntity loan = loanProvider.findById(request.loanId())
+        LoanEntity loan = loanProvider.findByIdForUpdate(request.loanId())
                 .filter(l -> l.getUserId().equals(user.userId()))
-                .orElseThrow(() -> new LoanNotFoundException(request.loanId()));
+                .orElseThrow(() -> {
+                    LoanNotFoundException ex = new LoanNotFoundException(request.loanId());
+                    log.warn("Платеж отклонен, кредит не найден: loanId={}, message={}", request.loanId(), ex.getMessage());
+                    return ex;
+                });
 
         if (loan.getStatus() != LoanStatus.ACTIVE) {
-            throw new LoanNotActiveException(loan.getId(), loan.getStatus());
+            LoanNotActiveException ex = new LoanNotActiveException(loan.getId(), loan.getStatus());
+            log.warn("Платеж отклонен, кредит неактивен: loanId={}, message={}", loan.getId(), ex.getMessage());
+            throw ex;
         }
 
         BigDecimal amount = request.amount();
         if (amount.compareTo(loan.getRemainingAmount()) > 0) {
-            throw new PaymentExceedsBalanceException(loan.getId(), amount, loan.getRemainingAmount());
+            PaymentExceedsBalanceException ex = new PaymentExceedsBalanceException(loan.getId(), amount, loan.getRemainingAmount());
+            log.warn("Платеж отклонен, сумма превышает остаток задолженности: loanId={}, message={}", loan.getId(), ex.getMessage());
+            throw ex;
         }
 
         BigDecimal newRemaining = loan.getRemainingAmount().subtract(amount);
@@ -59,6 +70,9 @@ public class PaymentCreateUseCaseImpl implements PaymentCreateUseCase {
                 .balanceAfter(savedLoan.getRemainingAmount())
                 .build();
         PaymentEntity savedPayment = paymentRepository.save(payment);
+
+        log.info("Зафиксирован платеж: paymentId={}, loanId={}, paymentType={}, balanceAfter={}",
+                savedPayment.getId(), savedLoan.getId(), request.paymentType(), savedLoan.getRemainingAmount());
 
         return new PaymentResponse(savedPayment.getId(), savedLoan.getRemainingAmount(), savedLoan.getNextPaymentDate());
     }

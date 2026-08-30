@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PaymentControllerIntegrationTest extends IntegrationTestBase {
-
     private static final String ENDPOINT = "/loan-management-service/api/v1/payment";
 
     @Autowired

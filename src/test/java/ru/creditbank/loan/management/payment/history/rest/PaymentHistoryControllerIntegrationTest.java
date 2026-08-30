@@ -22,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class PaymentHistoryControllerIntegrationTest extends IntegrationTestBase {
-
     private static final String ENDPOINT = "/loan-management-service/api/payment/history";
 
     @Autowired

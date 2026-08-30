@@ -5,6 +5,5 @@ import ru.creditbank.loan.management.payment.create.rest.dto.CreatePaymentReques
 import ru.creditbank.loan.management.payment.create.rest.dto.PaymentResponse;
 
 public interface PaymentCreateUseCase {
-
     PaymentResponse createPayment(AuthenticatedUser user, CreatePaymentRequest request);
 }

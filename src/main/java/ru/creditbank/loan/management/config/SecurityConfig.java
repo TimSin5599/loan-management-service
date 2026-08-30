@@ -19,7 +19,6 @@ import java.util.List;
 @EnableWebSecurity
 @EnableConfigurationProperties({JwtProperties.class, InternalApiKeyProperties.class})
 public class SecurityConfig {
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final InternalApiKeyFilter internalApiKeyFilter;
     private final ObjectMapper objectMapper;
@@ -55,6 +54,7 @@ public class SecurityConfig {
             throws java.io.IOException {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(java.nio.charset.StandardCharsets.UTF_8.name());
         objectMapper.writeValue(response.getWriter(), new ErrorResponse(status.value(), message, List.of(message)));
     }
 }

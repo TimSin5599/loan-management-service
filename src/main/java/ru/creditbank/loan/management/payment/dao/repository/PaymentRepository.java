@@ -7,6 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
-
     List<PaymentEntity> findAllByLoanIdOrderByPaymentDateDesc(UUID loanId);
 }

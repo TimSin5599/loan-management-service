@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class LoanIssuanceControllerIntegrationTest extends IntegrationTestBase {
-
     private static final String ENDPOINT = "/loan-management-service/internal/loans";
 
     @Autowired

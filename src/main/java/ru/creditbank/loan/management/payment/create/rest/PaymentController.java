@@ -14,7 +14,6 @@ import ru.creditbank.loan.management.payment.create.service.PaymentCreateUseCase
 
 @RestController
 public class PaymentController {
-
     private final PaymentCreateUseCase paymentCreateUseCase;
 
     public PaymentController(PaymentCreateUseCase paymentCreateUseCase) {

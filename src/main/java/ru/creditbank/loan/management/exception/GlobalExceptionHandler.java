@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(LoanNotFoundException.class)
@@ -29,6 +28,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({LoanNotActiveException.class, PaymentExceedsBalanceException.class})
     public ResponseEntity<ErrorResponse> handleBusinessValidation(RuntimeException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler({LoanCancelledException.class, LoanAlreadyClosedException.class})
+    public ResponseEntity<ErrorResponse> handleConflict(RuntimeException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)

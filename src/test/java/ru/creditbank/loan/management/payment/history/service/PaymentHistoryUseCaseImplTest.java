@@ -1,8 +1,8 @@
 package ru.creditbank.loan.management.payment.history.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.creditbank.loan.management.config.AuthenticatedUser;
@@ -13,6 +13,7 @@ import ru.creditbank.loan.management.loan.dao.service.LoanProvider;
 import ru.creditbank.loan.management.payment.dao.entity.PaymentEntity;
 import ru.creditbank.loan.management.payment.dao.entity.PaymentType;
 import ru.creditbank.loan.management.payment.dao.repository.PaymentRepository;
+import ru.creditbank.loan.management.payment.history.rest.dto.PaymentHistoryItemMapper;
 import ru.creditbank.loan.management.payment.history.rest.dto.PaymentHistoryResponse;
 
 import java.math.BigDecimal;
@@ -26,15 +27,18 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentHistoryUseCaseImplTest {
-
     @Mock
     private LoanProvider loanProvider;
 
     @Mock
     private PaymentRepository paymentRepository;
 
-    @InjectMocks
     private PaymentHistoryUseCaseImpl paymentHistoryUseCase;
+
+    @BeforeEach
+    void setUp() {
+        paymentHistoryUseCase = new PaymentHistoryUseCaseImpl(loanProvider, paymentRepository, new PaymentHistoryItemMapper());
+    }
 
     @Test
     void getHistory_ownerRequestsOwnLoan_returnsPayments() {

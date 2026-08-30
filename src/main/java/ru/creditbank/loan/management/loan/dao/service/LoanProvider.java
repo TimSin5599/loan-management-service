@@ -9,7 +9,6 @@ import java.util.UUID;
 
 @Service
 public class LoanProvider {
-
     private final LoanRepository loanRepository;
 
     public LoanProvider(LoanRepository loanRepository) {
@@ -18,6 +17,10 @@ public class LoanProvider {
 
     public Optional<LoanEntity> findById(UUID id) {
         return loanRepository.findById(id);
+    }
+
+    public Optional<LoanEntity> findByIdForUpdate(UUID id) {
+        return loanRepository.findByIdForUpdate(id);
     }
 
     public LoanEntity save(LoanEntity loan) {

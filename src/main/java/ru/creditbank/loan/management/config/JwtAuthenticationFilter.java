@@ -23,7 +23,6 @@ import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String INTERNAL_PATH_PREFIX = "/loan-management-service/internal";
 

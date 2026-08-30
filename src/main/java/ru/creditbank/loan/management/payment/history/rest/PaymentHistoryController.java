@@ -14,7 +14,6 @@ import java.util.UUID;
 
 @RestController
 public class PaymentHistoryController {
-
     private final PaymentHistoryUseCase paymentHistoryUseCase;
 
     public PaymentHistoryController(PaymentHistoryUseCase paymentHistoryUseCase) {

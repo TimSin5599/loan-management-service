@@ -19,7 +19,6 @@ import java.util.List;
 
 @Component
 public class InternalApiKeyFilter extends OncePerRequestFilter {
-
     private static final String API_KEY_HEADER = "X-Internal-Api-Key";
     private static final String INTERNAL_PATH_PREFIX = "/loan-management-service/internal";
 
@@ -55,6 +54,7 @@ public class InternalApiKeyFilter extends OncePerRequestFilter {
         String message = "Недействительный внутренний API-ключ";
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(java.nio.charset.StandardCharsets.UTF_8.name());
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), message, List.of(message));
         objectMapper.writeValue(response.getWriter(), errorResponse);
     }

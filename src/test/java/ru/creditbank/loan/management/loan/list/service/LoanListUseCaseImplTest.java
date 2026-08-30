@@ -1,14 +1,15 @@
 package ru.creditbank.loan.management.loan.list.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.creditbank.loan.management.config.AuthenticatedUser;
 import ru.creditbank.loan.management.loan.dao.entity.LoanEntity;
 import ru.creditbank.loan.management.loan.dao.entity.LoanStatus;
 import ru.creditbank.loan.management.loan.dao.repository.LoanRepository;
+import ru.creditbank.loan.management.loan.list.rest.dto.LoanInfoMapper;
 import ru.creditbank.loan.management.loan.list.rest.dto.UserLoansResponse;
 
 import java.math.BigDecimal;
@@ -21,12 +22,15 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LoanListUseCaseImplTest {
-
     @Mock
     private LoanRepository loanRepository;
 
-    @InjectMocks
     private LoanListUseCaseImpl loanListUseCase;
+
+    @BeforeEach
+    void setUp() {
+        loanListUseCase = new LoanListUseCaseImpl(loanRepository, new LoanInfoMapper());
+    }
 
     @Test
     void getUserLoans_mapsEntitiesToLoanInfo() {

@@ -6,6 +6,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import ru.creditbank.loan.management.loan.dao.entity.LoanEntity;
 import ru.creditbank.loan.management.loan.dao.entity.LoanStatus;
 import ru.creditbank.loan.management.loan.dao.repository.LoanRepository;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LoanIssuanceUseCaseImplTest {
-
     @Mock
     private LoanRepository loanRepository;
 
@@ -67,5 +67,26 @@ class LoanIssuanceUseCaseImplTest {
 
         assertThat(response.loanId()).isEqualTo(existing.getId());
         verify(loanRepository, never()).save(any());
+    }
+
+    @Test
+    void issueLoan_concurrentDuplicateInsert_returnsWinnersLoanInsteadOfThrowing() {
+        UUID creditApplicationId = UUID.randomUUID();
+        LoanEntity winner = LoanEntity.builder()
+                .id(UUID.randomUUID())
+                .creditApplicationId(creditApplicationId)
+                .status(LoanStatus.ACTIVE)
+                .build();
+        when(loanRepository.findByCreditApplicationId(creditApplicationId))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(winner));
+        when(loanRepository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate key"));
+
+        IssueLoanRequest request = new IssueLoanRequest(
+                creditApplicationId, UUID.randomUUID(), BigDecimal.valueOf(100000), 24, BigDecimal.valueOf(12.5));
+        IssueLoanResponse response = loanIssuanceUseCase.issueLoan(request);
+
+        assertThat(response.loanId()).isEqualTo(winner.getId());
+        assertThat(response.status()).isEqualTo(winner.getStatus());
     }
 }
